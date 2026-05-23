@@ -9,7 +9,7 @@ const mobileOpen = ref(false)
 const navItems = [
   { label: 'Startseite', to: '/' },
   { label: 'ABC/XYZ Analyse', to: '/abc-xyz' },
-  { label: 'Stücklistenanalyse', to: '/stueckliste', disabled: true },
+  { label: 'Stücklistenanalyse', to: '/stueckliste' },
   { label: 'Make-or-Buy', to: '/make-or-buy', disabled: true },
 ]
 

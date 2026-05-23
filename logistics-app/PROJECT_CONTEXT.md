@@ -2,9 +2,8 @@
 > AI continuation file — Sommersemester 2026
 
 ## Student
-- **Name:** Firas Bouzidi
-- **Matrikelnummer:** 594251
-- **Kurs:** Produktionswirtschaft & Logistik · HTW Berlin · SS 2026
+- **Name:** Firas Bouzidi · Matrikelnummer 594251
+- **Studiengang:** Wirtschaftsinformatik (B.Sc.) · HTW Berlin · SS 2026
 - **Titel:** Interaktive Analyse logistischer Entscheidungsverfahren
 
 ---
@@ -15,11 +14,11 @@
 | Framework | Vue 3 (Composition API + `<script setup>`) |
 | Build | Vite |
 | Styling | TailwindCSS v3 (custom `brand`, `accent`, `surface` palette) |
-| Charts | Chart.js (via direct instantiation) |
+| Charts | Chart.js (direct instantiation, no wrapper) |
 | State | Pinia |
 | Routing | Vue Router 4 |
 | Icons | Inline SVG |
-| Utils | @vueuse/core |
+| Utils | @vueuse/core (useIntersectionObserver) |
 
 ---
 
@@ -27,73 +26,75 @@
 ```
 src/
   components/
-    layout/   Navbar.vue  Footer.vue
-    home/     HeroSection.vue  ZielkonfliktSection.vue  ModuleCards.vue
-    abcxyz/   ABCIntro.vue  ProductTable.vue  ParetoChart.vue
-  views/      HomeView.vue  ABCXYZView.vue
-  stores/     abcxyz.js
-  router/     index.js
-  style.css   (Tailwind + custom utilities)
-  App.vue     main.js
+    layout/       Navbar.vue  Footer.vue
+    home/         HeroSection.vue  ProfileSection.vue
+                  ZielkonfliktSection.vue  ModuleCards.vue
+    abcxyz/       ABCIntro.vue  ProductTable.vue  ParetoChart.vue
+    stueckliste/  BOMKPICards.vue  BOMTree.vue  BOMTable.vue  BOMCostChart.vue
+  views/          HomeView.vue  ABCXYZView.vue  StuecklisteView.vue
+  stores/         abcxyz.js  stueckliste.js
+  router/         index.js
+  assets/         firas-profile.jpeg
+  style.css       App.vue  main.js
 ```
 
 ---
 
 ## Design System
 - **Background:** `#0f172a` (surface-900)
-- **Cards:** glassmorphism — `bg-white/5 backdrop-blur-md border border-white/10`
-- **Accent:** `#0ea5e9` sky-500 (class `accent-*`)
-- **Brand blue:** `#1a3a6b` (class `brand-500`)
-- **Animations:** CSS keyframes (`float`, `slideUp`, `fadeIn`, `pulse-slow`) + IntersectionObserver scroll reveals
+- **Glass cards:** `bg-white/5 backdrop-blur-md border border-white/10`
+- **Accent:** `#0ea5e9` sky-500
+- **Animations:** CSS keyframes + IntersectionObserver scroll reveals
 - **Typography:** Inter (Google Fonts)
+- **Module color coding:** ABC=accent-blue · BOM=violet-purple · MoB=rose-pink
 
 ---
 
-## Completed in Step 1
-- [x] Project scaffold (Vite + Vue 3)
-- [x] TailwindCSS with custom design tokens
-- [x] Navbar (transparent → frosted glass on scroll, mobile hamburger)
-- [x] Footer
-- [x] HomeView with animated hero, KPI counters, Zielkonflikt section, Module cards
-- [x] ABCXYZView with tabs (Analyse / Theorie)
-- [x] ABCIntro — class explanations (A/B/C cards)
-- [x] ProductTable — 10 realistic products, editable price + demand, live ABC badge
-- [x] ParetoChart — Chart.js combo bar+line, auto-updates with Pinia store
-- [x] Pinia store `abcxyz.js` — computed ABC classification + reactive updates
+## Completed — Step 1 (Homepage + ABC/XYZ)
+- [x] Scaffold, TailwindCSS design tokens, router, Pinia
+- [x] Navbar (scroll-aware frosted glass, mobile hamburger)
+- [x] Hero + KPI animated counters + Zielkonflikt + ModuleCards
+- [x] ProfileSection — photo, bio (Wirtschaftsinformatik B.Sc.), DRÄXLMAIER Werkstudent badge
+- [x] ABCXYZView — tabs: Theorie / Analyse & Tabelle
+- [x] ProductTable (10 items, editable, live ABC badge + cum. bar)
+- [x] ParetoChart (Chart.js combo bar+line, reactive)
+- [x] Store `abcxyz.js` — cumPct ≤ 70% → A | ≤ 90% → B | > 90% → C
 
----
-
-## ABC Classification Logic (abcxyz.js)
-```
-Rang by descending totalValue = price × demand
-cumPct ≤ 70% → A  |  ≤ 90% → B  |  > 90% → C
-```
+## Completed — Step 2 (Stücklistenanalyse)
+- [x] Store `stueckliste.js` — 14 BOM items, groups, computed KPIs, stockSummary, costByGroup
+- [x] `BOMKPICards.vue` — Gesamtkosten (animated), teuerste Komponente, Ø Lieferzeit, Lieferanten + stock split
+- [x] `BOMTree.vue` — 2-level expandable tree (product → assembly → component), group color coding
+- [x] `BOMTable.vue` — editable qty/price/leadTime, group filter, live footer sum, stock badges
+- [x] `BOMCostChart.vue` — doughnut (cost by group) + horizontal bar (top 8 components), both reactive
+- [x] `StuecklisteView.vue` — 3 tabs: Analyse & Tabelle / Produktstruktur / Kostenanalyse
+- [x] Route `/stueckliste` active, Navbar + ModuleCards unlocked
 
 ---
 
 ## Routes
-| Path | View |
-|---|---|
-| `/` | HomeView |
-| `/abc-xyz` | ABCXYZView |
-| `/stueckliste` | *(Step 2 — not built)* |
-| `/make-or-buy` | *(Step 3 — not built)* |
+| Path | View | Status |
+|---|---|---|
+| `/` | HomeView | ✅ Done |
+| `/abc-xyz` | ABCXYZView | ✅ Done |
+| `/stueckliste` | StuecklisteView | ✅ Done |
+| `/make-or-buy` | — | 🔜 Step 3 |
 
 ---
 
-## Next Steps (Step 2)
-1. **Complete ABC/XYZ module**
-   - Add XYZ classification (CV = σ/μ of demand)
-   - Combined ABC×XYZ matrix view (3×3 grid with strategy recommendations)
-   - Export to CSV/PDF
-   - Summary statistics panel
-2. **Stücklistenanalyse module**
-   - Multi-level BOM tree input
-   - Total cost explosion
-   - Gozinto chart visualization
-3. **Make-or-Buy module**
-   - Scoring matrix (cost, quality, strategy, capacity)
-   - Break-even chart (fixed vs variable cost comparison)
+## BOM Data (stueckliste.js)
+- Product: **Autonomer Lagerroboter AR-200** (FG-001)
+- 4 assemblies: Antriebseinheit · Sensorik & Steuerung · Energieversorgung · Gehäuse & Mechanik
+- 14 components, total cost **3.310 €**, 14 unique suppliers
+- Stock: 11 in_stock · 2 low_stock · 1 out_of_stock (LiFePO4 Akku — critical)
+
+---
+
+## Next Steps — Step 3 (Make-or-Buy Analyse)
+1. Store `makeorbuy.js` — criteria, weights, alternatives, scoring
+2. `MOBScoringMatrix.vue` — editable weight/score grid per criterion
+3. `MOBBreakevenChart.vue` — break-even line chart (fixed + variable cost vs. volume)
+4. `MOBResult.vue` — decision summary card with recommendation
+5. Route `/make-or-buy` + nav unlock
 
 ---
 

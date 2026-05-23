@@ -8,6 +8,11 @@ const routes = [
     name: 'ABCXYZ',
     component: () => import('../views/ABCXYZView.vue'),
   },
+  {
+    path: '/stueckliste',
+    name: 'Stueckliste',
+    component: () => import('../views/StuecklisteView.vue'),
+  },
 ]
 
 export default createRouter({
