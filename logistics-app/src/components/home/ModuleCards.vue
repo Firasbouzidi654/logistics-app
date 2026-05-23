@@ -44,11 +44,10 @@ const modules = [
     icon: 'scale',
     color: 'from-rose-600/30 to-pink-700/20',
     border: 'border-rose-500/30',
-    badge: 'In Entwicklung',
-    badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
+    badge: 'Verfügbar',
+    badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/make-or-buy',
     features: ['Nutzwertanalyse', 'Break-even Analyse', 'Entscheidungsmatrix'],
-    disabled: true,
     delay: 300,
   },
 ]
