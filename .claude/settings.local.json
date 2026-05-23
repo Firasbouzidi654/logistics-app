@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm uninstall *)",
+      "Bash(npm install *)",
+      "Bash(copy \"c:\\\\Users\\\\Firas\\\\Documents\\\\UNI LSF\\\\5 Semester\\\\Produktionswirtschaft_Logistik\\\\Programme\\\\Firas CV.jpeg\" \"c:\\\\Users\\\\Firas\\\\Documents\\\\UNI LSF\\\\5 Semester\\\\Produktionswirtschaft_Logistik\\\\Programme\\\\logistics-app\\\\src\\\\assets\\\\firas-profile.jpeg\")",
+      "Bash(node -e ' *)"
+    ]
+  }
+}
