@@ -19,7 +19,7 @@ const modules = [
     badge: 'Verfügbar',
     badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/abc-xyz',
-    features: ['Pareto-Diagramm', 'Live-Kalkulation', 'Editierbare Tabelle'],
+    features: ['Pareto-Diagramm', 'Live-Kalkulation', 'Praxisbeispiel Augsburg'],
     delay: 0,
   },
   {
@@ -47,7 +47,7 @@ const modules = [
     badge: 'Verfügbar',
     badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/make-or-buy',
-    features: ['Nutzwertanalyse', 'Break-even Analyse', 'Entscheidungsmatrix'],
+    features: ['Nutzwertanalyse', 'Break-even Analyse', 'BMW · Apple · Boeing'],
     delay: 300,
   },
 ]
@@ -73,7 +73,7 @@ const modules = [
           :class="[
             'group relative rounded-2xl p-6 border transition-all duration-500 card-glow overflow-hidden',
             `bg-gradient-to-br ${m.color} ${m.border}`,
-            m.disabled ? 'cursor-default opacity-70' : 'hover:-translate-y-1 hover:shadow-glow cursor-pointer',
+            m.disabled ? 'cursor-default opacity-70' : 'module-card cursor-pointer',
             visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12',
           ]"
           :style="{ transitionDelay: m.delay + 'ms' }"
