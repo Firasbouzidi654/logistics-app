@@ -1,11 +1,28 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
 import { RouterLink } from 'vue-router'
+import gsap from 'gsap'
 
 const el = ref(null)
+const cardsRef = ref([])
 const visible = ref(false)
-useIntersectionObserver(el, ([{ isIntersecting }]) => { if (isIntersecting) visible.value = true }, { threshold: 0.15 })
+
+useIntersectionObserver(el, ([{ isIntersecting }]) => {
+  if (isIntersecting && !visible.value) {
+    visible.value = true
+    gsap.fromTo(
+      cardsRef.value,
+      { opacity: 0, y: 48, scale: 0.97 },
+      {
+        opacity: 1, y: 0, scale: 1,
+        duration: 0.65,
+        ease: 'power3.out',
+        stagger: 0.14,
+      }
+    )
+  }
+}, { threshold: 0.15 })
 
 const modules = [
   {
@@ -20,7 +37,6 @@ const modules = [
     badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/abc-xyz',
     features: ['Pareto-Diagramm', 'Live-Kalkulation', 'Praxisbeispiel Augsburg'],
-    delay: 0,
   },
   {
     title: 'Stücklistenanalyse',
@@ -34,7 +50,6 @@ const modules = [
     badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/stueckliste',
     features: ['Mehrstufige BoM', 'Kostenauflösung', 'Live-Kalkulation'],
-    delay: 150,
   },
   {
     title: 'Make-or-Buy Analyse',
@@ -48,7 +63,6 @@ const modules = [
     badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/make-or-buy',
     features: ['Nutzwertanalyse', 'Break-even Analyse', 'BMW · Apple · Boeing'],
-    delay: 300,
   },
 ]
 </script>
@@ -67,31 +81,28 @@ const modules = [
       <div class="grid md:grid-cols-3 gap-6">
         <component
           :is="m.disabled ? 'div' : RouterLink"
-          v-for="m in modules"
+          v-for="(m, idx) in modules"
           :key="m.title"
+          :ref="el => { if (el) cardsRef[idx] = el.$el ?? el }"
           v-bind="m.disabled ? {} : { to: m.to }"
           :class="[
-            'group relative rounded-2xl p-6 border transition-all duration-500 card-glow overflow-hidden',
+            'group relative rounded-2xl p-6 border transition-all duration-500 overflow-hidden',
             `bg-gradient-to-br ${m.color} ${m.border}`,
             m.disabled ? 'cursor-default opacity-70' : 'module-card cursor-pointer',
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12',
           ]"
-          :style="{ transitionDelay: m.delay + 'ms' }"
+          style="opacity: 0;"
         >
-          <!-- Shimmer on hover -->
+          <!-- Shimmer sweep on hover -->
           <div v-if="!m.disabled" class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none"></div>
 
           <div class="flex items-start justify-between mb-4">
-            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-              <!-- Chart bar icon -->
+            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:bg-white/15">
               <svg v-if="m.icon === 'chart-bar'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-white">
                 <path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-8"/>
               </svg>
-              <!-- List icon -->
               <svg v-else-if="m.icon === 'list'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-white">
                 <path d="M3 6h18M3 12h18M3 18h18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/>
               </svg>
-              <!-- Scale icon -->
               <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-6 h-6 text-white">
                 <path d="M12 3v18M3 9l9-6 9 6"/><path d="M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
               </svg>
@@ -116,7 +127,7 @@ const modules = [
 
           <div v-if="!m.disabled" class="mt-5 flex items-center gap-2 text-accent-400 text-sm font-medium">
             Jetzt starten
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 group-hover:translate-x-1 transition-transform">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 group-hover:translate-x-1.5 transition-transform duration-200">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </div>

@@ -1,10 +1,22 @@
 <script setup>
 import { ref } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
+import gsap from 'gsap'
 
 const el = ref(null)
+const cardRefs = ref([])
 const visible = ref(false)
-useIntersectionObserver(el, ([{ isIntersecting }]) => { if (isIntersecting) visible.value = true }, { threshold: 0.2 })
+
+useIntersectionObserver(el, ([{ isIntersecting }]) => {
+  if (isIntersecting && !visible.value) {
+    visible.value = true
+    gsap.fromTo(
+      cardRefs.value,
+      { opacity: 0, y: 36, scale: 0.97 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'power3.out', stagger: 0.16 }
+    )
+  }
+}, { threshold: 0.2 })
 
 const points = [
   {
@@ -53,15 +65,15 @@ const points = [
         <div
           v-for="(p, i) in points"
           :key="p.side"
+          :ref="el => { if (el) cardRefs[i] = el }"
           :class="[
-            'glass rounded-2xl p-6 border transition-all duration-700 card-glow',
+            'group glass rounded-2xl p-6 border card-lift',
             `bg-gradient-to-br ${p.color} ${p.border}`,
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10',
-            i === 1 ? 'delay-200' : 'delay-100',
           ]"
+          style="opacity: 0;"
         >
           <div class="flex items-center gap-3 mb-5">
-            <span class="text-3xl">{{ p.icon }}</span>
+            <span class="text-3xl transition-transform duration-300 group-hover:scale-110">{{ p.icon }}</span>
             <h3 :class="['text-xl font-bold', p.accent]">{{ p.title }}</h3>
           </div>
           <ul class="space-y-3">
@@ -81,7 +93,7 @@ const points = [
       <div
         :class="['mt-8 max-w-2xl mx-auto text-center transition-all duration-700 delay-400', visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6']"
       >
-        <div class="glass rounded-xl p-5 border border-accent-500/20">
+        <div class="glass rounded-xl p-5 border border-accent-500/20 hover:border-accent-500/35 transition-colors duration-300">
           <p class="text-slate-300 text-sm leading-relaxed">
             <span class="text-accent-400 font-semibold">Lösung:</span>
             Analytische Verfahren wie die ABC/XYZ-Analyse ermöglichen eine differenzierte Betrachtung —

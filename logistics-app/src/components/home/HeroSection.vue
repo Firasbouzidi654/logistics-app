@@ -10,7 +10,6 @@ useIntersectionObserver(heroRef, ([{ isIntersecting }]) => {
   if (isIntersecting) visible.value = true
 }, { threshold: 0.1 })
 
-// Animated counter helper
 const counters = ref([
   { label: 'Analysemethoden', target: 3,    suffix: '',  current: 0 },
   { label: 'Datenpunkte',     target: 1200, suffix: '+', current: 0 },
@@ -39,8 +38,8 @@ onMounted(() => {
 
 <template>
   <section ref="heroRef" class="relative min-h-screen flex flex-col justify-center overflow-hidden">
-    <!-- Animated background -->
-    <div class="absolute inset-0 bg-grid opacity-100 pointer-events-none"></div>
+    <!-- Background grid (reduced opacity) -->
+    <div class="absolute inset-0 bg-grid opacity-80 pointer-events-none"></div>
 
     <!-- Glowing orbs -->
     <div class="orb w-96 h-96 bg-accent-600/20 top-10 -left-20 animate-pulse-slow"></div>
@@ -67,11 +66,27 @@ onMounted(() => {
       <div
         :class="['text-center transition-all duration-700 delay-150', visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8']"
       >
-        <h1 class="text-4xl sm:text-5xl lg:text-7xl font-black text-white leading-tight tracking-tight mb-6">
-          Interaktive Analyse<br />
-          <span class="gradient-text">logistischer</span><br />
-          Entscheidungsverfahren
-        </h1>
+        <!-- Animated gradient glow behind the title -->
+        <div class="relative inline-block w-full">
+          <div
+            class="absolute inset-0 pointer-events-none flex items-center justify-center hero-title-glow"
+            style="
+              background: radial-gradient(ellipse 70% 55% at 50% 50%,
+                rgba(14,165,233,0.18) 0%,
+                rgba(56,189,248,0.10) 40%,
+                transparent 70%);
+              filter: blur(32px);
+              z-index: 0;
+            "
+          ></div>
+
+          <h1 class="relative z-10 text-4xl sm:text-5xl lg:text-7xl font-black text-white leading-tight tracking-tight mb-6">
+            Interaktive Analyse<br />
+            <span class="gradient-text">logistischer</span><br />
+            Entscheidungsverfahren
+          </h1>
+        </div>
+
         <p class="text-slate-400 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-10">
           Praxisnahe Analyse von ABC/XYZ-Klassifikation, Stücklistenanalyse und Make-or-Buy-Entscheidungen
           mit interaktiven Visualisierungen und dynamischen Kalkulationen.
@@ -98,9 +113,10 @@ onMounted(() => {
         :class="['grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 transition-all duration-700 delay-300', visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10']"
       >
         <div
-          v-for="c in counters"
+          v-for="(c, i) in counters"
           :key="c.label"
-          class="glass glass-hover rounded-2xl p-5 text-center card-glow group"
+          class="glass glass-hover rounded-2xl p-5 text-center kpi-card"
+          :style="{ animationDelay: i * 80 + 'ms' }"
         >
           <div class="text-3xl font-black gradient-text mb-1">
             {{ c.current }}{{ c.suffix }}
