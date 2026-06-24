@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 
 const props = defineProps({
-  /** 'abc' | 'mob' */
+  /** Currently supported export type: 'abc' */
   type: { type: String, required: true },
   /** optional label shown in the panel */
   label: { type: String, default: '' },
@@ -20,11 +20,6 @@ async function run(format) {
       if (format === 'csv')   exportABCCSV()
       if (format === 'excel') await exportABCExcel()
       if (format === 'pdf')   await exportABCPDF()
-    } else {
-      const { exportMOBCSV, exportMOBExcel, exportMOBPDF } = await import('../../composables/useMOBExport')
-      if (format === 'csv')   exportMOBCSV()
-      if (format === 'excel') await exportMOBExcel()
-      if (format === 'pdf')   await exportMOBPDF()
     }
     toast.value = `✓ ${format.toUpperCase()} exportiert`
     setTimeout(() => (toast.value = ''), 2800)

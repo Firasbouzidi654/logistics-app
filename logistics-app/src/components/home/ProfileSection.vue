@@ -115,7 +115,7 @@ const stats = [
               <p>
                 Diese Plattform entstand im Rahmen des Moduls
                 <span class="text-accent-400 font-medium">Produktionswirtschaft & Logistik</span> (SS 2026)
-                und zeigt, wie sich Analysemethoden wie ABC/XYZ oder Make-or-Buy
+                und zeigt, wie sich Analysemethoden wie ABC oder Make-or-Buy
                 interaktiv und datengetrieben umsetzen lassen.
               </p>
             </div>

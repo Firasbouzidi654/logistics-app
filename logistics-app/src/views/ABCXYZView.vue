@@ -5,7 +5,7 @@ import Footer            from '../components/layout/Footer.vue'
 import ABCIntro          from '../components/abcxyz/ABCIntro.vue'
 import ProductTable      from '../components/abcxyz/ProductTable.vue'
 import ParetoChart       from '../components/abcxyz/ParetoChart.vue'
-import PraxisbeispielABC from '../components/abcxyz/PraxisbeispielABC.vue'
+import CalculationExplanation from '../components/abcxyz/CalculationExplanation.vue'
 import ExportPanel       from '../components/shared/ExportPanel.vue'
 import { useABCXYZStore }    from '../stores/abcxyz'
 
@@ -14,7 +14,6 @@ const store = useABCXYZStore()
 const activeTab = ref('analyse')
 const tabs = [
   { id: 'analyse',        label: 'Analyse & Tabelle',  icon: '📊' },
-  { id: 'praxisbeispiel', label: 'Praxisbeispiel',     icon: '🏭' },
   { id: 'theorie',        label: 'Theorie',             icon: '📖' },
 ]
 
@@ -24,10 +23,10 @@ function fmt(n) {
 
 // Live KPI counts derived from store
 const kpis = [
-  { label: 'A-Artikel', labelSub: '≥ 70% des Werts', color: 'text-rose-400',   getValue: () => store.enriched.filter(p => p.abc === 'A').length },
-  { label: 'B-Artikel', labelSub: '70–90% kumuliert', color: 'text-amber-400', getValue: () => store.enriched.filter(p => p.abc === 'B').length },
-  { label: 'C-Artikel', labelSub: '> 90% kumuliert',  color: 'text-slate-400', getValue: () => store.enriched.filter(p => p.abc === 'C').length },
-  { label: '80/20',     labelSub: 'Pareto-Prinzip',   color: 'gradient-text',  getValue: () => null },
+  { label: 'A-Artikel', labelSub: 'Wichtig', color: 'text-rose-400', getValue: () => store.enriched.filter(p => p.abc === 'A').length },
+  { label: 'B-Artikel', labelSub: 'Mittel', color: 'text-amber-400', getValue: () => store.enriched.filter(p => p.abc === 'B').length },
+  { label: 'C-Artikel', labelSub: 'Gering', color: 'text-slate-400', getValue: () => store.enriched.filter(p => p.abc === 'C').length },
+  { label: 'Gesamtwert', labelSub: 'Jahresverbrauchswert', color: 'text-accent-400', currency: true, getValue: () => store.totalValue },
 ]
 </script>
 
@@ -45,16 +44,16 @@ const kpis = [
         <div class="flex items-center gap-2 text-sm text-slate-500 mb-4">
           <RouterLink to="/" class="hover:text-slate-300 transition-colors">Startseite</RouterLink>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4"><path d="M9 18l6-6-6-6"/></svg>
-          <span class="text-slate-300">ABC/XYZ Analyse</span>
+          <span class="text-slate-300">ABC-Analyse</span>
         </div>
 
         <!-- Title row + Export -->
         <div class="flex items-start justify-between flex-wrap gap-4 mb-2">
           <div>
-            <h1 class="text-3xl md:text-4xl font-black text-white mb-2">ABC/XYZ-Analyse</h1>
+            <h1 class="text-3xl md:text-4xl font-black text-white mb-2">ABC-Analyse</h1>
             <p class="text-slate-400 max-w-2xl">
-              Klassifikation von Lagerartikeln nach Jahresverbrauchswert (ABC) und Bedarfsschwankung (XYZ).
-              Bearbeite die Tabelle — Pareto-Diagramm und Klassifikation aktualisieren sich live.
+              Klassifikation von Lagerartikeln nach ihrem Jahresverbrauchswert (ABC).
+              Bearbeite die Tabelle — Diagramm und Klassifikation aktualisieren sich live.
             </p>
           </div>
           <div class="flex flex-col items-end gap-3">
@@ -96,19 +95,22 @@ const kpis = [
         <div v-if="activeTab === 'analyse'" key="analyse" class="space-y-8">
 
           <!-- KPI Cards -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div
-              v-for="kpi in kpis"
-              :key="kpi.label"
-              class="glass rounded-xl p-4 border border-white/10 text-center card-lift"
-            >
-              <p class="text-2xl font-black" :class="kpi.color === 'gradient-text' ? 'gradient-text' : kpi.color">
-                {{ kpi.getValue() !== null ? kpi.getValue() : '80/20' }}
-              </p>
-              <p class="text-sm font-semibold text-white mt-1">{{ kpi.label }}</p>
-              <p class="text-xs text-slate-500 mt-0.5">{{ kpi.labelSub }}</p>
+          <section>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 mb-3">ABC-Klassifikation</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div
+                v-for="kpi in kpis"
+                :key="kpi.label"
+                class="glass rounded-xl p-4 border border-white/10 text-center card-lift"
+              >
+                <p class="text-2xl font-black" :class="kpi.color">
+                  {{ fmt(kpi.getValue()) }}<span v-if="kpi.currency" class="text-base ml-1">€</span>
+                </p>
+                <p class="text-sm font-semibold text-white mt-1">{{ kpi.label }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ kpi.labelSub }}</p>
+              </div>
             </div>
-          </div>
+          </section>
 
           <!-- Total value indicator -->
           <div class="glass rounded-xl border border-accent-500/20 bg-gradient-to-r from-accent-600/8 to-transparent p-4 flex items-center gap-4">
@@ -127,12 +129,8 @@ const kpis = [
           </div>
 
           <ParetoChart />
+          <CalculationExplanation />
           <ProductTable />
-        </div>
-
-        <!-- Praxisbeispiel tab -->
-        <div v-else-if="activeTab === 'praxisbeispiel'" key="praxisbeispiel">
-          <PraxisbeispielABC />
         </div>
 
         <!-- Theorie tab -->

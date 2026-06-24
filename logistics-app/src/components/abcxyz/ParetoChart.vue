@@ -152,7 +152,7 @@ watch(() => store.enriched, buildChart, { deep: true })
   <div class="glass rounded-2xl border border-white/10 overflow-hidden card-lift">
     <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between flex-wrap gap-3">
       <div>
-        <h3 class="text-white font-semibold">Pareto-Diagramm · ABC-Klassifikation</h3>
+        <h3 class="text-white font-semibold">ABC-Diagramm · ABC-Klassifikation</h3>
         <p class="text-slate-500 text-xs mt-0.5">Aktualisiert sich automatisch bei Tabellenänderungen</p>
       </div>
       <div class="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
@@ -166,21 +166,20 @@ watch(() => store.enriched, buildChart, { deep: true })
           <span class="w-3 h-3 rounded bg-slate-400/60 inline-block ring-1 ring-slate-400/30"></span>C-Artikel
         </span>
         <span class="flex items-center gap-1.5">
-          <span class="w-5 h-0.5 rounded-full bg-accent-400 inline-block"></span>Kum. %
+          <span class="w-5 h-0.5 rounded-full bg-accent-400 inline-block"></span>Kumuliert %
         </span>
       </div>
     </div>
 
-    <!-- Zone markers -->
     <div class="relative px-6 pt-3 pb-1 flex gap-2 text-xs">
       <span class="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">
-        A-Zone · ~70%
+        A = Wichtig
       </span>
       <span class="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-        B-Zone · 70–90%
+        B = Mittel
       </span>
       <span class="px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-400 border border-slate-500/20 font-medium">
-        C-Zone · 90–100%
+        C = Gering
       </span>
     </div>
 

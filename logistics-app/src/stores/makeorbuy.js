@@ -1,128 +1,115 @@
+import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
 
-// ── Scenario: Elektrische Antriebseinheit EA-300 ──────────────────────────
-// Company: LogiTech Fertigungs GmbH  |  Supplier: Siemens AG Industrial Drive
-
-const INITIAL_CRITERIA = [
-  { id: 1, label: 'Kosteneffizienz',       description: 'Gesamtkosten bei Planmenge',     weight: 25, makeScore: 6, buyScore: 8 },
-  { id: 2, label: 'Qualitätskontrolle',    description: 'Einfluss auf Produktqualität',    weight: 20, makeScore: 9, buyScore: 6 },
-  { id: 3, label: 'Flexibilität',          description: 'Reaktion auf Bedarfsänderungen',  weight: 15, makeScore: 8, buyScore: 5 },
-  { id: 4, label: 'Lieferzeit',            description: 'Durchlaufzeit bis Verfügbarkeit', weight: 15, makeScore: 7, buyScore: 8 },
-  { id: 5, label: 'Strategische Bedeutung',description: 'Know-how & Kernkompetenz',        weight: 10, makeScore: 9, buyScore: 4 },
-  { id: 6, label: 'Skalierbarkeit',        description: 'Hochlauf bei steigender Menge',   weight: 10, makeScore: 5, buyScore: 9 },
-  { id: 7, label: 'Lieferantenrisiko',     description: 'Abhängigkeit & Ausfallrisiko',    weight:  5, makeScore: 9, buyScore: 4 },
+const PRODUCTS = [
+  { id: 'motor', name: 'Drive Motor DM-200', sku: 'DM-200', internalCost: 110, setupCost: 100000 },
+  { id: 'sensor', name: 'LiDAR Sensor LS-40', sku: 'LS-40', internalCost: 110, setupCost: 50000 },
+  { id: 'battery', name: 'Battery Pack BP-24', sku: 'BP-24', internalCost: 52, setupCost: 20000 },
 ]
 
 export const useMakeOrBuyStore = defineStore('makeorbuy', () => {
+  const products = ref(PRODUCTS)
+  const selectedProductId = ref('motor')
+  const selectedSupplierId = ref('siemens')
+  const quantity = ref(3000)
+  const internalCost = ref(110)
+  const productionSetupCost = ref(100000)
 
-  // ── Editable parameters ──────────────────────────────────────────────────
-  const params = ref({
-    fixedCosts:          180_000,   // € Einmalig: Maschinen, Werkzeuge, Setup
-    materialCostPerUnit:  58,        // € Materialkosten/Stück
-    laborCostPerUnit:     48,        // € Arbeitskosten/Stück
-    machineCostPerUnit:   39,        // € Maschinenkosten/Stück
-    supplierPrice:        210,       // € Lieferantenpreis/Stück (Siemens AG)
-    quantity:           2_000,       // Stück/Jahr Planmenge
-    supplierRisk:          62,       // Risiko-Score 0–100 (höher = riskanter)
-    capacityUsage:         78,       // % aktuelle Kapazitätsauslastung
+  const suppliers = ref([
+    { id: 'siemens', name: 'Siemens', location: 'Munich, DE', price: 210, leadTime: 5, quality: 9 },
+    { id: 'bosch', name: 'Bosch', location: 'Stuttgart, DE', price: 200, leadTime: 3, quality: 10 },
+    { id: 'abb', name: 'ABB', location: 'Zurich, CH', price: 205, leadTime: 7, quality: 8 },
+  ])
+
+  const selectedProduct = computed(() =>
+    products.value.find(product => product.id === selectedProductId.value) ?? products.value[0]
+  )
+  const selectedSupplier = computed(() =>
+    suppliers.value.find(supplier => supplier.id === selectedSupplierId.value) ?? suppliers.value[0]
+  )
+  const supplierPrice = computed(() => selectedSupplier.value.price)
+  const supplierTotal = computed(() => quantity.value * supplierPrice.value)
+  const internalTotal = computed(() => productionSetupCost.value + quantity.value * internalCost.value)
+  const recommendation = computed(() => {
+    if (supplierTotal.value < internalTotal.value) return 'buy'
+    if (internalTotal.value < supplierTotal.value) return 'make'
+    return 'break-even'
+  })
+  const totalSavings = computed(() => Math.abs(supplierTotal.value - internalTotal.value))
+  const savingsPercentage = computed(() => {
+    const referenceCost = Math.max(supplierTotal.value, internalTotal.value)
+    return referenceCost > 0 ? (totalSavings.value / referenceCost) * 100 : 0
   })
 
-  const criteria = ref(INITIAL_CRITERIA.map(c => ({ ...c })))
-
-  // ── Derived financial computations ───────────────────────────────────────
-  const variableCostPerUnit = computed(() =>
-    params.value.materialCostPerUnit +
-    params.value.laborCostPerUnit +
-    params.value.machineCostPerUnit
-  )
-
-  const makeTotalCost = computed(() =>
-    params.value.fixedCosts + variableCostPerUnit.value * params.value.quantity
-  )
-
-  const buyTotalCost = computed(() =>
-    params.value.supplierPrice * params.value.quantity
-  )
-
-  const costDiff = computed(() => buyTotalCost.value - makeTotalCost.value)   // positive → Make cheaper
-
-  const breakEvenQty = computed(() => {
-    const diff = params.value.supplierPrice - variableCostPerUnit.value
-    return diff > 0 ? Math.ceil(params.value.fixedCosts / diff) : null
-  })
-
-  const costWinner = computed(() => makeTotalCost.value <= buyTotalCost.value ? 'make' : 'buy')
-
-  // ── Criteria weighting ───────────────────────────────────────────────────
-  const totalWeight = computed(() => criteria.value.reduce((s, c) => s + c.weight, 0))
-
-  const weightedMakeScore = computed(() =>
-    +(criteria.value.reduce((s, c) => s + (c.makeScore * c.weight), 0) / totalWeight.value).toFixed(2)
-  )
-  const weightedBuyScore = computed(() =>
-    +(criteria.value.reduce((s, c) => s + (c.buyScore  * c.weight), 0) / totalWeight.value).toFixed(2)
-  )
-  const qualityWinner = computed(() =>
-    weightedMakeScore.value >= weightedBuyScore.value ? 'make' : 'buy'
-  )
-
-  // ── Overall recommendation (cost 60% + quality 40%) ─────────────────────
-  const overallRecommendation = computed(() => {
-    const costScore  = costWinner.value   === 'make' ? 1 : 0
-    const qualScore  = qualityWinner.value === 'make' ? 1 : 0
-    const combined   = costScore * 0.6 + qualScore * 0.4
-    if (combined >= 0.5) return 'make'
-    if (combined <= 0.4) return 'buy'
-    return 'neutral'
-  })
-
-  const confidence = computed(() => {
-    const costGap  = Math.abs(costDiff.value) / Math.max(makeTotalCost.value, buyTotalCost.value) * 100
-    const qualGap  = Math.abs(weightedMakeScore.value - weightedBuyScore.value) / 10 * 100
-    return Math.min(95, Math.round((costGap * 0.5 + qualGap * 0.5)))
-  })
-
-  // ── Break-even chart series (0 … 2× planmenge or 5 000) ─────────────────
-  const breakevenSeries = computed(() => {
-    const max    = Math.max(params.value.quantity * 2, 5000)
-    const steps  = 20
-    const step   = Math.round(max / steps)
-    return Array.from({ length: steps + 1 }, (_, i) => {
-      const qty = i * step
-      return {
-        qty,
-        make: params.value.fixedCosts + variableCostPerUnit.value * qty,
-        buy:  params.value.supplierPrice * qty,
-      }
-    })
-  })
-
-  // ── Grouped comparison at key quantities ─────────────────────────────────
-  const comparisonLevels = computed(() => {
-    const levels = [500, 1000, 1500, 2000, 3000, 4000, 5000]
-    return levels.map(qty => ({
-      qty,
-      make: params.value.fixedCosts + variableCostPerUnit.value * qty,
-      buy:  params.value.supplierPrice * qty,
-    }))
-  })
-
-  // ── Mutations ────────────────────────────────────────────────────────────
-  function setParam(key, val) {
-    params.value[key] = +val || 0
+  function supplierScore(supplier) {
+    const priceScore = supplier.price <= 150 ? 10 : supplier.price <= 155 ? 7 : 4
+    const deliveryScore = supplier.leadTime <= 3 ? 10 : supplier.leadTime <= 5 ? 8 : 6
+    return priceScore * 0.4 + deliveryScore * 0.3 + supplier.quality * 0.3
   }
-  function setCriteria(id, field, val) {
-    const c = criteria.value.find(c => c.id === id)
-    if (c) c[field] = field === 'label' || field === 'description' ? val : +val || 0
+
+  const recommendedSupplier = computed(() =>
+    [...suppliers.value].sort((a, b) => supplierScore(b) - supplierScore(a))[0]
+  )
+  const bestPriceSupplier = computed(() =>
+    [...suppliers.value].sort((a, b) => a.price - b.price)[0]
+  )
+  const fastestSupplier = computed(() =>
+    [...suppliers.value].sort((a, b) => a.leadTime - b.leadTime)[0]
+  )
+  const breakEvenQuantity = computed(() => {
+    const unitSaving = supplierPrice.value - internalCost.value
+    return unitSaving > 0 ? Math.ceil(productionSetupCost.value / unitSaving) : null
+  })
+  const chartQuantities = computed(() => {
+    const referenceQuantity = Math.max(quantity.value, breakEvenQuantity.value ?? 0)
+    const maximum = Math.max(Math.ceil(referenceQuantity * 1.25 / 100) * 100, 100)
+    return Array.from({ length: 7 }, (_, index) => Math.round((maximum / 6) * index))
+  })
+
+  function selectProduct(id) {
+    const product = products.value.find(item => item.id === id)
+    if (!product) return
+    selectedProductId.value = id
+    internalCost.value = product.internalCost
+    productionSetupCost.value = product.setupCost
+  }
+
+  function selectSupplier(id) {
+    if (suppliers.value.some(supplier => supplier.id === id)) {
+      selectedSupplierId.value = id
+    }
+  }
+
+  function setNumber(field, value) {
+    const number = Math.max(0, Number(value) || 0)
+    if (field === 'quantity') quantity.value = number
+    if (field === 'internalCost') internalCost.value = number
+    if (field === 'productionSetupCost') productionSetupCost.value = number
   }
 
   return {
-    params, criteria,
-    variableCostPerUnit, makeTotalCost, buyTotalCost, costDiff, breakEvenQty,
-    costWinner, weightedMakeScore, weightedBuyScore, qualityWinner,
-    overallRecommendation, confidence, totalWeight,
-    breakevenSeries, comparisonLevels,
-    setParam, setCriteria,
+    products,
+    selectedProductId,
+    selectedSupplierId,
+    quantity,
+    internalCost,
+    productionSetupCost,
+    suppliers,
+    selectedProduct,
+    selectedSupplier,
+    supplierPrice,
+    supplierTotal,
+    internalTotal,
+    recommendation,
+    totalSavings,
+    savingsPercentage,
+    recommendedSupplier,
+    bestPriceSupplier,
+    fastestSupplier,
+    chartQuantities,
+    breakEvenQuantity,
+    selectProduct,
+    selectSupplier,
+    setNumber,
   }
 })

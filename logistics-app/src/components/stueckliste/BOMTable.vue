@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useStuecklisteStore } from '../../stores/stueckliste'
+import { exportBOMAnalysisPDF } from '../../composables/useBOMExport'
 
 const store = useStuecklisteStore()
 const filterGroup = ref('Alle')
+const exporting = ref(false)
 
 const groups = computed(() => ['Alle', ...new Set(store.items.map(i => i.group))])
 const filtered = computed(() =>
@@ -28,6 +30,15 @@ const groupColors = {
   Energie:   'bg-amber-500/15   text-amber-400   border-amber-500/25',
   Mechanik:  'bg-rose-500/15    text-rose-400    border-rose-500/25',
 }
+
+async function exportPDF() {
+  exporting.value = true
+  try {
+    await exportBOMAnalysisPDF(filtered.value)
+  } finally {
+    exporting.value = false
+  }
+}
 </script>
 
 <template>
@@ -36,10 +47,19 @@ const groupColors = {
     <div class="px-6 py-4 border-b border-white/10 flex flex-wrap items-center justify-between gap-4">
       <div>
         <h3 class="text-white font-semibold">BOM-Tabelle · Verbrauchsmaterialien</h3>
-        <p class="text-slate-500 text-xs mt-0.5">Mengen und Kosten editierbar · Summen aktualisieren sich live</p>
+        <p class="text-slate-500 text-xs mt-0.5">Mengen, Kosten und Lagerstatus editierbar · Summen aktualisieren sich live</p>
       </div>
       <!-- Group filter -->
-      <div class="flex flex-wrap gap-1.5">
+      <div class="flex flex-wrap items-center justify-end gap-1.5">
+        <button
+          class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-rose-500/25 bg-rose-500/10 text-rose-300 transition hover:bg-rose-500/20 disabled:opacity-60"
+          :disabled="exporting"
+          @click="exportPDF"
+        >{{ exporting ? 'PDF wird erstellt…' : '📄 Export BOM Analysis PDF' }}</button>
+        <span
+          v-if="store.criticalComponents > 1"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/25"
+        >⚠ Lieferengpass möglich</span>
         <button
           v-for="g in groups"
           :key="g"
@@ -105,9 +125,21 @@ const groupColors = {
             <td class="text-center text-slate-400 text-xs">{{ item.supplier }}</td>
 
             <td class="text-center">
-              <span :class="['inline-flex px-2 py-0.5 rounded-full text-xs font-medium border', stockMeta[item.stock]?.cls]">
-                {{ stockMeta[item.stock]?.label }}
-              </span>
+              <div class="flex flex-col items-center gap-1.5">
+                <select
+                  :value="item.stock"
+                  :class="['rounded-full border px-2 py-1 text-xs font-medium outline-none cursor-pointer bg-surface-800', stockMeta[item.stock]?.cls]"
+                  @change="store.updateItem(item.id, 'stock', $event.target.value)"
+                >
+                  <option value="in_stock">Verfügbar</option>
+                  <option value="low_stock">Niedrig</option>
+                  <option value="out_of_stock">Nicht vorrätig</option>
+                </select>
+                <span
+                  v-if="item.stock === 'low_stock' || item.stock === 'out_of_stock'"
+                  class="text-[11px] font-medium text-amber-300 whitespace-nowrap"
+                >⚠ Nachbestellung empfohlen</span>
+              </div>
             </td>
 
             <td class="text-right">

@@ -86,6 +86,20 @@ export const useStuecklisteStore = defineStore('stueckliste', () => {
     out_of_stock: items.value.filter(i => i.stock === 'out_of_stock').length,
   }))
 
+  const criticalComponents = computed(() =>
+    stockSummary.value.low_stock + stockSummary.value.out_of_stock
+  )
+
+  const riskLevel = computed(() => {
+    if (criticalComponents.value === 0) {
+      return { label: 'Niedriges Risiko', tone: 'text-emerald-400', background: 'bg-emerald-500/10 border-emerald-500/25' }
+    }
+    if (criticalComponents.value <= 2) {
+      return { label: 'Mittleres Risiko', tone: 'text-amber-400', background: 'bg-amber-500/10 border-amber-500/25' }
+    }
+    return { label: 'Hohes Risiko', tone: 'text-rose-400', background: 'bg-rose-500/10 border-rose-500/25' }
+  })
+
   function updateItem(id, field, val) {
     const item = items.value.find(i => i.id === id)
     if (item) item[field] = field === 'qty' || field === 'unitCost' || field === 'leadTime'
@@ -93,5 +107,8 @@ export const useStuecklisteStore = defineStore('stueckliste', () => {
       : val
   }
 
-  return { items, enriched, totalCost, mostExpensive, avgLeadTime, supplierCount, costByGroup, stockSummary, updateItem }
+  return {
+    items, enriched, totalCost, mostExpensive, avgLeadTime, supplierCount, costByGroup,
+    stockSummary, criticalComponents, riskLevel, updateItem,
+  }
 })

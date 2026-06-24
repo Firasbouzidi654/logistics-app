@@ -88,7 +88,7 @@ onMounted(() => {
         </div>
 
         <p class="text-slate-400 text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-10">
-          Praxisnahe Analyse von ABC/XYZ-Klassifikation, Stücklistenanalyse und Make-or-Buy-Entscheidungen
+          Praxisnahe Analyse von ABC-Klassifikation, Stücklistenanalyse und Make-or-Buy-Entscheidungen
           mit interaktiven Visualisierungen und dynamischen Kalkulationen.
         </p>
 

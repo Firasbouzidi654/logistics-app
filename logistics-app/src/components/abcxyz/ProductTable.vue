@@ -37,7 +37,7 @@ function fmt(n) {
             <th class="text-right">Menge/Jahr</th>
             <th class="text-right">Verbrauchswert (€)</th>
             <th class="text-right">Anteil %</th>
-            <th class="text-right">Kum. %</th>
+            <th class="text-right">Kumuliert %</th>
             <th class="text-center">Klasse</th>
           </tr>
         </thead>
@@ -64,7 +64,18 @@ function fmt(n) {
               />
             </td>
             <td class="text-right font-medium text-white">{{ fmt(p.totalValue) }}</td>
-            <td class="text-right text-slate-300">{{ p.pct.toFixed(1) }}%</td>
+            <td class="text-right">
+              <div class="flex items-center justify-end gap-2">
+                <div class="flex-1 max-w-16 h-1.5 rounded-full bg-surface-700 overflow-hidden">
+                  <div
+                    class="h-full rounded-full transition-all duration-500"
+                    :class="p.abc === 'A' ? 'bg-rose-400' : p.abc === 'B' ? 'bg-amber-400' : 'bg-slate-400'"
+                    :style="{ width: Math.min(p.pct, 100) + '%' }"
+                  ></div>
+                </div>
+                <span class="text-sm text-slate-300 w-12 text-right">{{ p.pct.toFixed(1) }}%</span>
+              </div>
+            </td>
             <td class="text-right">
               <div class="flex items-center justify-end gap-2">
                 <div class="flex-1 max-w-16 h-1.5 rounded-full bg-surface-700 overflow-hidden">

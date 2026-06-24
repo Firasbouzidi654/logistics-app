@@ -96,7 +96,7 @@ const points = [
         <div class="glass rounded-xl p-5 border border-accent-500/20 hover:border-accent-500/35 transition-colors duration-300">
           <p class="text-slate-300 text-sm leading-relaxed">
             <span class="text-accent-400 font-semibold">Lösung:</span>
-            Analytische Verfahren wie die ABC/XYZ-Analyse ermöglichen eine differenzierte Betrachtung —
+            Analytische Verfahren wie die ABC-Analyse ermöglichen eine differenzierte Betrachtung —
             nicht alle Artikel benötigen dieselbe Strategie.
           </p>
         </div>

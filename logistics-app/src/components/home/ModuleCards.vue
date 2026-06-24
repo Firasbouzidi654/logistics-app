@@ -26,17 +26,17 @@ useIntersectionObserver(el, ([{ isIntersecting }]) => {
 
 const modules = [
   {
-    title: 'ABC/XYZ Analyse',
+    title: 'ABC-Analyse',
     subtitle: 'Bestandsklassifikation',
     description:
-      'Klassifikation von Artikeln nach Wertanteil (ABC) und Bedarfsschwankung (XYZ). Automatische Pareto-Auswertung mit interaktivem Diagramm.',
+      'Klassifikation von Artikeln nach ihrem Jahresverbrauchswert (ABC) mit interaktivem Diagramm.',
     icon: 'chart-bar',
     color: 'from-accent-600/30 to-blue-700/20',
     border: 'border-accent-500/30',
     badge: 'Verfügbar',
     badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/abc-xyz',
-    features: ['Pareto-Diagramm', 'Live-Kalkulation', 'Praxisbeispiel Augsburg'],
+    features: ['ABC-Diagramm', 'Live-Kalkulation', 'Theorie-Grundlagen'],
   },
   {
     title: 'Stücklistenanalyse',
@@ -55,14 +55,14 @@ const modules = [
     title: 'Make-or-Buy Analyse',
     subtitle: 'Entscheidungsmodell',
     description:
-      'Strukturierter Vergleich zwischen Eigenfertigung und Fremdbezug unter Berücksichtigung von Kosten, Qualität und strategischen Faktoren.',
+      'A clear dashboard for procurement decisions and supplier comparison.',
     icon: 'scale',
     color: 'from-rose-600/30 to-pink-700/20',
     border: 'border-rose-500/30',
     badge: 'Verfügbar',
     badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
     to: '/make-or-buy',
-    features: ['Nutzwertanalyse', 'Break-even Analyse', 'BMW · Apple · Boeing'],
+    features: ['Procurement decision', 'Supplier comparison', 'Cost comparison'],
   },
 ]
 </script>

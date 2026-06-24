@@ -1,6 +1,6 @@
 /**
  * useABCExport.js
- * Export ABC/XYZ data → CSV · Excel · PDF
+ * Export ABC data → CSV · Excel · PDF
  */
 import { useABCXYZStore } from '../stores/abcxyz'
 
@@ -22,7 +22,7 @@ function triggerDownload(filename, mime, content) {
 export function exportABCCSV() {
   const store = useABCXYZStore()
   const header = ['Rang', 'Artikel', 'Stückpreis (€)', 'Menge/Jahr',
-                  'Verbrauchswert (€)', 'Anteil %', 'Kum. %', 'Klasse']
+                  'Verbrauchswert (€)', 'Anteil %', 'Kumuliert %', 'Klasse']
   const rows = store.enriched.map((p, i) => [
     i + 1, p.name, p.value, p.demand,
     p.totalValue, p.pct.toFixed(2) + '%', p.cumPct.toFixed(2) + '%', p.abc,
@@ -30,7 +30,7 @@ export function exportABCCSV() {
   const csv = [header, ...rows]
     .map(r => r.map(c => `"${c}"`).join(';'))
     .join('\r\n')
-  triggerDownload('abc_xyz_analyse.csv', 'text/csv;charset=utf-8;', '﻿' + csv)
+  triggerDownload('abc_analyse.csv', 'text/csv;charset=utf-8;', '﻿' + csv)
 }
 
 /* ── Excel ────────────────────────────────────────────────────── */
@@ -39,17 +39,14 @@ export async function exportABCExcel() {
   const XLSX  = (await import('xlsx')).default ?? (await import('xlsx'))
 
   const sheetData = [
-    ['ABC/XYZ Analyse — HTW Berlin Wirtschaftsingenieurwesen'],
+    ['ABC-Analyse — HTW Berlin Wirtschaftsingenieurwesen'],
     [`Gesamtwert: ${fmt(store.totalValue)} €  |  Erstellt: ${new Date().toLocaleDateString('de-DE')}`],
     [],
     ['Rang', 'Artikel', 'Stückpreis (€)', 'Menge/Jahr',
-     'Verbrauchswert (€)', 'Anteil %', 'Kum. %', 'Klasse'],
+     'Verbrauchswert (€)', 'Anteil %', 'Kumuliert %', 'Klasse'],
     ...store.enriched.map((p, i) => [
       i + 1, p.name, p.value, p.demand,
-      p.totalValue,
-      p.pct.toFixed(2) + '%',
-      p.cumPct.toFixed(2) + '%',
-      p.abc,
+      p.totalValue, p.pct.toFixed(2) + '%', p.cumPct.toFixed(2) + '%', p.abc,
     ]),
   ]
 
@@ -58,12 +55,12 @@ export async function exportABCExcel() {
   // Column widths
   ws['!cols'] = [
     { wch: 6 }, { wch: 28 }, { wch: 14 }, { wch: 12 },
-    { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 8 },
+    { wch: 18 }, { wch: 10 }, { wch: 12 }, { wch: 8 },
   ]
 
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, 'ABC-XYZ Analyse')
-  XLSX.writeFile(wb, 'abc_xyz_analyse.xlsx')
+  XLSX.utils.book_append_sheet(wb, ws, 'ABC-Analyse')
+  XLSX.writeFile(wb, 'abc_analyse.xlsx')
 }
 
 /* ── PDF ──────────────────────────────────────────────────────── */
@@ -80,7 +77,7 @@ export async function exportABCPDF() {
   doc.setFontSize(17)
   doc.setTextColor(255)
   doc.setFont('helvetica', 'bold')
-  doc.text('ABC/XYZ Analyse', 14, 13)
+  doc.text('ABC-Analyse', 14, 13)
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   doc.text('HTW Berlin · Produktionswirtschaft & Logistik', 14, 21)
@@ -89,16 +86,13 @@ export async function exportABCPDF() {
   // ── Table
   autoTable(doc, {
     startY: 34,
-    head: [['#', 'Artikel', 'Stückpreis', 'Menge/Jahr', 'Verbrauchswert', 'Anteil', 'Kum. %', 'Klasse']],
+    head: [['#', 'Artikel', 'Stückpreis', 'Menge/Jahr', 'Verbrauchswert', 'Anteil', 'Kumuliert %', 'Klasse']],
     body: store.enriched.map((p, i) => [
       i + 1,
       p.name,
       fmt(p.value) + ' €',
       fmt(p.demand) + ' Stk',
-      fmt(p.totalValue) + ' €',
-      p.pct.toFixed(1) + '%',
-      p.cumPct.toFixed(1) + '%',
-      p.abc,
+      fmt(p.totalValue) + ' €', p.pct.toFixed(1) + '%', p.cumPct.toFixed(1) + '%', p.abc,
     ]),
     styles: { fontSize: 9, cellPadding: 4, textColor: [30, 30, 50] },
     headStyles: {
@@ -134,10 +128,10 @@ export async function exportABCPDF() {
     doc.setFontSize(8)
     doc.setTextColor(160)
     doc.text(
-      `Seite ${i} von ${pageCount}  |  ABC/XYZ Analyse  |  HTW Berlin`,
+      `Seite ${i} von ${pageCount}  |  ABC-Analyse  |  HTW Berlin`,
       148.5, 205, { align: 'center' }
     )
   }
 
-  doc.save('abc_xyz_analyse.pdf')
+  doc.save('abc_analyse.pdf')
 }
