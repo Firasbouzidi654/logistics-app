@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { useMakeOrBuyStore } from '../../stores/makeorbuy'
 import CostComparisonChart from './CostComparisonChart.vue'
 
@@ -13,6 +14,55 @@ const recommendationColor = value => ({
   buy: 'text-accent-400',
   'break-even': 'text-amber-400',
 })[value]
+
+const highestTotal = computed(() => Math.max(store.supplierTotal, store.internalTotal, 1))
+const buyBarWidth = computed(() => (store.supplierTotal / highestTotal.value) * 100)
+const makeBarWidth = computed(() => (store.internalTotal / highestTotal.value) * 100)
+const riskLevel = computed(() =>
+  store.selectedSupplier.quality >= 8 && store.selectedSupplier.leadTime <= 7 ? 'Low' : 'Medium',
+)
+const confidence = computed(() =>
+  store.savingsPercentage >= 10 ? 'High' : store.savingsPercentage >= 3 ? 'Medium' : 'Low',
+)
+const breakEvenStatus = computed(() => {
+  if (store.recommendation === 'break-even') return 'Both options have the same total cost.'
+  if (store.recommendation === 'make') {
+    return store.breakEvenQuantity !== null && store.quantity >= store.breakEvenQuantity
+      ? 'Production volume justifies internal manufacturing.'
+      : 'Internal manufacturing is currently cost-effective.'
+  }
+  return store.breakEvenQuantity !== null
+    ? 'Current quantity is below the break-even point.'
+    : 'Supplier procurement remains more cost-effective.'
+})
+const justification = computed(() => {
+  if (store.recommendation === 'make') {
+    return [
+      'Lower total cost for the selected quantity',
+      `Significant savings (${formatCurrency(store.totalSavings)})`,
+      'Better long-term profitability',
+      'Internal production is economically justified',
+    ]
+  }
+  if (store.recommendation === 'buy') {
+    return [
+      'Lower total cost for the selected quantity',
+      `Significant savings (${formatCurrency(store.totalSavings)})`,
+      'No production setup investment is required',
+      'Supplier procurement is economically justified',
+    ]
+  }
+  return ['Both options have the same total cost', 'Additional qualitative criteria should guide the decision']
+})
+const procurementInsight = computed(() => {
+  if (store.recommendation === 'make') {
+    return 'For quantities above the current level, internal production remains the preferred option due to lower unit costs and higher cost efficiency.'
+  }
+  if (store.recommendation === 'buy') {
+    return 'For quantities below the break-even point, supplier procurement remains the preferred option because it avoids setup costs.'
+  }
+  return 'At the break-even point, qualitative factors such as capacity, quality, and flexibility guide the decision.'
+})
 </script>
 
 <template>
@@ -79,6 +129,48 @@ const recommendationColor = value => ({
             <span class="block text-xs text-slate-500 mt-2">One-time tooling, preparation, and production start-up cost.</span>
           </label>
         </div>
+
+        <section class="mt-6 pt-5 border-t border-white/10">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-sm font-semibold text-white">Calculation Breakdown</h3>
+            <span class="text-xs text-slate-500">Based on current inputs</span>
+          </div>
+          <div class="grid md:grid-cols-3 gap-3">
+            <article class="rounded-xl border border-accent-500/20 bg-accent-500/[0.06] p-3">
+              <p class="text-xs font-semibold text-accent-300">Buy Cost Formula</p>
+              <p class="text-slate-400 text-xs mt-2">Supplier Price × Quantity</p>
+              <p class="text-slate-200 text-xs mt-2 leading-relaxed">
+                {{ formatCurrency(store.supplierPrice) }} × {{ formatNumber(store.quantity) }} =
+                <span class="font-bold text-white">{{ formatCurrency(store.supplierTotal) }}</span>
+              </p>
+            </article>
+
+            <article class="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] p-3">
+              <p class="text-xs font-semibold text-emerald-300">Make Cost Formula</p>
+              <p class="text-slate-400 text-xs mt-2">Internal Cost × Quantity + Setup Cost</p>
+              <p class="text-slate-200 text-xs mt-2 leading-relaxed">
+                {{ formatCurrency(store.internalCost) }} × {{ formatNumber(store.quantity) }} + {{ formatCurrency(store.productionSetupCost) }} =
+                <span class="font-bold text-white">{{ formatCurrency(store.internalTotal) }}</span>
+              </p>
+            </article>
+
+            <article class="rounded-xl border border-rose-500/20 bg-rose-500/[0.06] p-3">
+              <p class="text-xs font-semibold text-rose-300">Savings Formula</p>
+              <p class="text-slate-400 text-xs mt-2">
+                {{ store.recommendation === 'buy' ? 'Make Cost − Buy Cost' : 'Buy Cost − Make Cost' }}
+              </p>
+              <p class="text-slate-200 text-xs mt-2 leading-relaxed">
+                {{ store.recommendation === 'buy' ? formatCurrency(store.internalTotal) : formatCurrency(store.supplierTotal) }} −
+                {{ store.recommendation === 'buy' ? formatCurrency(store.supplierTotal) : formatCurrency(store.internalTotal) }} =
+                <span class="font-bold text-white">{{ formatCurrency(store.totalSavings) }}</span>
+              </p>
+            </article>
+          </div>
+          <p class="mt-4 text-xs text-slate-400 leading-relaxed">
+            <span class="text-rose-300 font-semibold">Decision Logic:</span>
+            If Make Cost is lower than Buy Cost, the dashboard recommends MAKE. Otherwise, it recommends BUY. Equal total costs result in BREAK-EVEN.
+          </p>
+        </section>
       </section>
 
       <aside
@@ -109,7 +201,58 @@ const recommendationColor = value => ({
             Compared against: <span class="text-white font-semibold">{{ store.selectedSupplier.name }} ({{ formatCurrency(store.supplierPrice) }}/unit)</span>
           </p>
         </div>
-        <div class="mt-7 pt-5 border-t border-white/10 grid grid-cols-2 gap-4">
+        <section class="mt-5 rounded-xl border border-white/10 bg-surface-900/25 p-4">
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Decision Analysis</p>
+          <div class="grid grid-cols-2 gap-x-4 gap-y-3 mt-3 text-xs">
+            <div>
+              <p class="text-slate-500">Quantity</p>
+              <p class="text-white font-bold mt-1">{{ formatNumber(store.quantity) }} units</p>
+            </div>
+            <div>
+              <p class="text-slate-500">Cost Difference</p>
+              <p class="text-white font-bold mt-1">{{ formatCurrency(store.totalSavings) }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500">Cost Advantage</p>
+              <p :class="['font-bold mt-1', recommendationColor(store.recommendation)]">{{ store.savingsPercentage.toFixed(1) }}%</p>
+            </div>
+            <div>
+              <p class="text-slate-500">Risk Level</p>
+              <p :class="['font-bold mt-1', riskLevel === 'Low' ? 'text-emerald-400' : 'text-amber-400']">{{ riskLevel }}</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-slate-500">Break-Even Status</p>
+              <p class="text-slate-200 font-medium mt-1 leading-relaxed">{{ breakEvenStatus }}</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-slate-500">Confidence</p>
+              <p :class="['font-bold mt-1', confidence === 'High' ? 'text-emerald-400' : confidence === 'Medium' ? 'text-amber-400' : 'text-slate-300']">{{ confidence }}</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="mt-4 space-y-3">
+          <div>
+            <div class="flex items-center justify-between gap-3 text-xs mb-1.5">
+              <span class="text-slate-300 font-medium">Buy Cost</span>
+              <span class="text-accent-300 font-bold">{{ formatCurrency(store.supplierTotal) }}</span>
+            </div>
+            <div class="h-2.5 rounded-full bg-surface-800 overflow-hidden">
+              <div class="h-full rounded-full bg-accent-400 transition-all duration-500" :style="{ width: buyBarWidth + '%' }"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between gap-3 text-xs mb-1.5">
+              <span class="text-slate-300 font-medium">Make Cost</span>
+              <span class="text-emerald-300 font-bold">{{ formatCurrency(store.internalTotal) }}</span>
+            </div>
+            <div class="h-2.5 rounded-full bg-surface-800 overflow-hidden">
+              <div class="h-full rounded-full bg-emerald-400 transition-all duration-500" :style="{ width: makeBarWidth + '%' }"></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="mt-5 pt-5 border-t border-white/10 grid grid-cols-2 gap-4">
           <div>
             <p class="text-slate-400 text-xs">Total Buy Cost</p>
             <p class="text-white font-bold mt-1">{{ formatCurrency(store.supplierTotal) }}</p>
@@ -124,6 +267,21 @@ const recommendationColor = value => ({
             <p class="text-slate-400 text-xs mt-1">Savings Percentage: {{ store.savingsPercentage.toFixed(1) }}%</p>
           </div>
         </div>
+
+        <section :class="['mt-4 rounded-xl border p-4', store.recommendation === 'make' ? 'bg-emerald-500/[0.08] border-emerald-500/20' : store.recommendation === 'buy' ? 'bg-accent-500/[0.08] border-accent-500/20' : 'bg-amber-500/[0.08] border-amber-500/20']">
+          <h3 :class="['font-bold text-sm', recommendationColor(store.recommendation)]">Why {{ recommendationLabel(store.recommendation) }}?</h3>
+          <ul class="space-y-1.5 mt-3">
+            <li v-for="reason in justification" :key="reason" class="flex gap-2 text-xs text-slate-200 leading-relaxed">
+              <span :class="['mt-1.5 h-1.5 w-1.5 rounded-full flex-none', store.recommendation === 'make' ? 'bg-emerald-400' : store.recommendation === 'buy' ? 'bg-accent-400' : 'bg-amber-400']"></span>
+              <span>{{ reason }}</span>
+            </li>
+          </ul>
+        </section>
+
+        <p class="mt-4 text-xs text-slate-400 leading-relaxed">
+          <span class="text-rose-300 font-semibold">Procurement Insight:</span>
+          {{ procurementInsight }}
+        </p>
       </aside>
     </div>
 

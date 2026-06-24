@@ -5,11 +5,13 @@ import Navbar from '../components/layout/Navbar.vue'
 import Footer from '../components/layout/Footer.vue'
 import ProcurementDecision from '../components/makeorbuy/ProcurementDecision.vue'
 import SupplierComparison from '../components/makeorbuy/SupplierComparison.vue'
+import MakeOrBuyTheory from '../components/makeorbuy/MakeOrBuyTheory.vue'
 
 const activeTab = ref('procurement')
 const tabs = [
   { id: 'procurement', label: 'Procurement Decision', icon: '📦' },
   { id: 'suppliers', label: 'Supplier Comparison', icon: '🤝' },
+  { id: 'theorie', label: 'Theorie', icon: '📚' },
 ]
 </script>
 
@@ -62,7 +64,8 @@ const tabs = [
     <main class="max-w-7xl mx-auto px-6 pb-20">
       <Transition name="tab-slide" mode="out-in">
         <ProcurementDecision v-if="activeTab === 'procurement'" key="procurement" />
-        <SupplierComparison v-else key="suppliers" />
+        <SupplierComparison v-else-if="activeTab === 'suppliers'" key="suppliers" />
+        <MakeOrBuyTheory v-else key="theorie" />
       </Transition>
     </main>
 
