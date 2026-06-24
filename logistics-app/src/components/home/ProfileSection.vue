@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useIntersectionObserver } from '@vueuse/core'
+import { RouterLink } from 'vue-router'
 import profileImg from '../../assets/firas-profile.jpeg'
 
 const el  = ref(null)
@@ -22,6 +23,33 @@ const stats = [
   { value: '5.',   label: 'Semester' },
   { value: 'B.Sc.', label: 'Abschluss' },
   { value: 'HTW',  label: 'Berlin' },
+]
+
+const projectCards = [
+  {
+    title: 'ABC-Analyse',
+    description: 'Klassifizierung von Artikeln nach ihrer wirtschaftlichen Bedeutung.',
+    button: 'Zur ABC-Analyse',
+    to: '/abc-xyz',
+    icon: 'chart',
+    tone: 'text-accent-400 bg-accent-500/15 border-accent-500/25',
+  },
+  {
+    title: 'Stücklistenanalyse',
+    description: 'Analyse von Produktstrukturen, Komponenten und Materialbeziehungen.',
+    button: 'Zur Stücklistenanalyse',
+    to: '/stueckliste',
+    icon: 'list',
+    tone: 'text-violet-300 bg-violet-500/15 border-violet-500/25',
+  },
+  {
+    title: 'Make-or-Buy',
+    description: 'Vergleich zwischen interner Fertigung und externem Einkauf.',
+    button: 'Zum Make-or-Buy Dashboard',
+    to: '/make-or-buy',
+    icon: 'scale',
+    tone: 'text-rose-300 bg-rose-500/15 border-rose-500/25',
+  },
 ]
 </script>
 
@@ -165,6 +193,43 @@ const stats = [
           </div>
         </div>
       </div>
+
+      <section :class="['mt-12 transition-all duration-700 delay-300', vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8']">
+        <div class="text-center mb-7">
+          <p class="text-xs uppercase tracking-[0.16em] text-accent-400 font-semibold">Projekt</p>
+          <h3 class="text-2xl md:text-3xl font-black text-white mt-2">Projektübersicht</h3>
+          <p class="text-slate-400 text-sm leading-relaxed max-w-3xl mx-auto mt-3">
+            Diese Anwendung wurde im Rahmen des Moduls Produktionswirtschaft &amp; Logistik entwickelt. Ziel ist es, logistische Entscheidungsprozesse datenbasiert zu unterstützen und typische Analyseverfahren wie ABC-Analyse, Stücklistenanalyse und Make-or-Buy-Entscheidungen interaktiv darzustellen.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-5">
+          <RouterLink
+            v-for="card in projectCards"
+            :key="card.title"
+            :to="card.to"
+            class="group glass rounded-2xl border border-white/10 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.07]"
+          >
+            <div :class="['w-11 h-11 rounded-xl border flex items-center justify-center mb-5', card.tone]">
+              <svg v-if="card.icon === 'chart'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                <path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-8"/>
+              </svg>
+              <svg v-else-if="card.icon === 'list'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                <path d="M7 6h14M7 12h14M7 18h14"/><path d="M3 6h.01M3 12h.01M3 18h.01"/>
+              </svg>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-5 h-5">
+                <path d="M12 3v18M3 9l9-6 9 6"/><path d="M6 12l-3 6h6l-3-6zM18 12l-3 6h6l-3-6z"/>
+              </svg>
+            </div>
+            <h4 class="text-lg font-bold text-white">{{ card.title }}</h4>
+            <p class="text-sm text-slate-400 leading-relaxed mt-2 min-h-11">{{ card.description }}</p>
+            <span class="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-accent-400 group-hover:text-accent-300">
+              {{ card.button }}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </span>
+          </RouterLink>
+        </div>
+      </section>
     </div>
   </section>
 </template>
