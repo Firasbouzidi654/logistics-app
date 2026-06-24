@@ -194,7 +194,7 @@ const projectCards = [
         </div>
       </div>
 
-      <section :class="['mt-12 transition-all duration-700 delay-300', vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8']">
+      <section id="project-overview" class="scroll-mt-24" :class="['mt-12 transition-all duration-700 delay-300', vis ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8']">
         <div class="text-center mb-7">
           <p class="text-xs uppercase tracking-[0.16em] text-accent-400 font-semibold">Projekt</p>
           <h3 class="text-2xl md:text-3xl font-black text-white mt-2">Projektübersicht</h3>
